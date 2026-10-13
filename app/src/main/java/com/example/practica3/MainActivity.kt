@@ -343,6 +343,7 @@ fun VistaMenu(navController: NavHostController, modifier: Modifier) {
         }
     }
 
+//que onda pibe
 
 @Preview(showBackground = true)
 @Composable
