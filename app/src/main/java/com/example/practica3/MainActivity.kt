@@ -51,10 +51,71 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.practica3.ui.theme.Practica3Theme
+import android.content.Context
+import retrofit2.http.FormUrlEncoded
+import retrofit2.http.GET
+import retrofit2.http.POST
+import retrofit2.Response
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.converter.scalars.ScalarsConverterFactory
+import retrofit2.http.Field
+
+
+data class ModeloCategoria(
+    val id: Int,
+    val nombre: String
+)
+
+data class ModeloProducto(
+    val id: Int,
+    val nombre: String,
+    val precio: Double,
+    val idCategoria: Int,
+    val nombreCategoria: String
+)
 
 
 
-//kekeby emanuel
+
+    interface ApiService {
+
+        @GET("categorias.php?buscar")
+        suspend fun buscarCategorias():
+                List<ModeloCategoria>
+
+        @GET("productos.php?buscar")
+        suspend fun buscarProductos():
+                List<ModeloProducto>
+
+        @POST("productos.php?registrar")
+        @FormUrlEncoded
+        suspend fun registrarProducto(
+            @Field("nombre") nombre: String,
+            @Field("precio") precio: Double,
+            @Field("categoria") categoria: Int
+        ): Response<Unit>
+
+        @POST("productos.php?eliminar")
+        @FormUrlEncoded
+        suspend fun eliminarProducto(
+            @Field("id") id: Int
+        ): Response<Unit>
+    }
+
+val retrofit = Retrofit.Builder()
+    .baseUrl(
+        "https://authorization-offers-filled-themes.trycloudflare.com/AW/ACT4/api/"
+    )
+    .addConverterFactory(
+        ScalarsConverterFactory.create()
+    )
+    .addConverterFactory(
+        GsonConverterFactory.create()
+    )
+    .build()
+
+val api = retrofit.create(ApiService::class.java)
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -71,6 +132,28 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
+class Preferencias(context: Context) {
+    private val preferences = context.getSharedPreferences("app", Context.MODE_PRIVATE)
+
+
+    fun guardar(prop: String, value: String) {
+        preferences.edit()
+            .putString(prop, value)
+            .apply()
+    }
+
+
+    fun obtener(prop: String, def: String): String? {
+        return preferences.getString(prop, def)
+    }
+
+
+    fun remover(prop: String) {
+        preferences.edit()
+            .remove(prop)
+            .apply()
+    }
+}
 
 @Composable
 fun AppContent(modifier: Modifier = Modifier) {
@@ -78,7 +161,7 @@ fun AppContent(modifier: Modifier = Modifier) {
 
     NavHost(
         navController = navController,
-        startDestination = "clubs"
+        startDestination = "VistaInicioSesion"
     ) {
         composable("VistaMenu") {
             VistaMenu(navController, modifier)
@@ -454,7 +537,7 @@ fun VistaFormulario(
 
         Text(
             text = "Total de registros: ${registros.size}",
-            fontWeight = FontWeight.Bold
+            fontWeight     = FontWeight.Bold
         )
     }
 }
@@ -520,9 +603,6 @@ fun VistaFormulario(
         }
     }
 
-//que onda pibe
-//marisol
-//lili
 
 @Preview(showBackground = true)
 @Composable
